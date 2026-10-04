@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hybrid Noise Skimming</title>
+<meta name="description" content="Audio samples and results for “One-Step Is Enough to Judge: Hybrid Noise Skimming for Full-band Text-to-Audio Generation”.">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f6f7f9;
+    --bg-card: #ffffff;
+    --fg: #1a1d21;
+    --fg-muted: #5b6470;
+    --line: #e2e5ea;
+    --accent: #2457c5;
+    --accent-soft: #eaf0fc;
+    --ours: #fff7e6;
+    --ours-line: #f0c36d;
+    --shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.08);
+    --radius: 12px;
+    --maxw: 1080px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1216; --bg-soft: #161a20; --bg-card: #161a20;
+      --fg: #e8eaee; --fg-muted: #9aa3ad; --line: #2a3038;
+      --accent: #7ea6ff; --accent-soft: #1b2740;
+      --ours: #2a2416; --ours-line: #7a5a1e;
+      --shadow: 0 1px 2px rgba(0,0,0,.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1216; --bg-soft: #161a20; --bg-card: #161a20;
+    --fg: #e8eaee; --fg-muted: #9aa3ad; --line: #2a3038;
+    --accent: #7ea6ff; --accent-soft: #1b2740;
+    --ours: #2a2416; --ours-line: #7a5a1e;
+    --shadow: 0 1px 2px rgba(0,0,0,.4);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    font-size: 16px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 16px; }
+
+  /* nav */
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px); border-bottom: 1px solid var(--line);
+  }
+  nav .wrap { display: flex; gap: 4px; overflow-x: auto; padding: 8px 16px; }
+  nav a {
+    white-space: nowrap; font-size: 14px; font-weight: 500; color: var(--fg-muted);
+    padding: 6px 12px; border-radius: 999px;
+  }
+  nav a:hover { background: var(--bg-soft); color: var(--fg); text-decoration: none; }
+
+  /* header */
+  header { padding: 56px 0 36px; text-align: center; }
+  header .venue {
+    display: inline-block; font-size: 13px; font-weight: 600; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--accent); background: var(--accent-soft);
+    padding: 4px 12px; border-radius: 999px; margin-bottom: 18px;
+  }
+  header h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.2; margin: 0 0 10px; letter-spacing: -.01em; }
+  header h1 small { display: block; font-size: .62em; font-weight: 500; color: var(--fg-muted); margin-top: 10px; letter-spacing: 0; }
+  header .authors { color: var(--fg-muted); margin: 14px 0 0; font-size: 15px; }
+  header .links { margin-top: 22px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  header .links a {
+    display: inline-flex; align-items: center; gap: 8px; padding: 9px 16px; border-radius: 999px;
+    border: 1px solid var(--line); background: var(--bg-card); color: var(--fg); font-weight: 500; font-size: 14px;
+    box-shadow: var(--shadow);
+  }
+  header .links a:hover { border-color: var(--accent); text-decoration: none; }
+
+  /* sections */
+  section { padding: 36px 0; border-top: 1px solid var(--line); }
+  h2 { font-size: 24px; margin: 0 0 18px; letter-spacing: -.01em; }
+  .lead { color: var(--fg-muted); margin: -8px 0 20px; font-size: 15px; }
+  .abstract p { margin: 0; text-align: justify; hyphens: auto; }
+
+  figure { margin: 0; }
+  figure img { width: 100%; height: auto; display: block; border-radius: var(--radius); background: #fff; padding: 10px; border: 1px solid var(--line); }
+  figcaption { font-size: 14px; color: var(--fg-muted); margin-top: 12px; }
+
+  /* samples */
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 14px; color: var(--fg-muted);
+    background: var(--bg-soft); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 20px;
+  }
+  .legend b { color: var(--fg); font-weight: 600; }
+  .sample {
+    background: var(--bg-card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 18px; margin-bottom: 14px; box-shadow: var(--shadow);
+  }
+  .sample h3 { margin: 0 0 12px; font-size: 16px; font-weight: 600; line-height: 1.4; }
+  .sample h3 .num {
+    display: inline-block; min-width: 30px; text-align: center; font-size: 12px; font-weight: 700;
+    color: var(--accent); background: var(--accent-soft); border-radius: 6px; padding: 2px 6px; margin-right: 10px; vertical-align: 2px;
+  }
+  .players { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 14px; }
+  @media (max-width: 860px) { .players { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 520px) { .players { grid-template-columns: 1fr; } }
+  .player { border-radius: 8px; padding: 8px 10px; background: var(--bg-soft); border: 1px solid transparent; }
+  .player.ours { background: var(--ours); border-color: var(--ours-line); }
+  .player-label { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; margin-bottom: 4px; }
+  .player-label .sys { font-weight: 600; }
+  .player-label .nfe { color: var(--fg-muted); font-variant-numeric: tabular-nums; }
+  audio { width: 100%; height: 36px; display: block; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-card); box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; font-variant-numeric: tabular-nums; }
+  thead th { background: var(--bg-soft); text-align: center; padding: 10px 8px; border-bottom: 2px solid var(--line); white-space: nowrap; font-weight: 600; }
+  thead th:first-child { text-align: left; padding-left: 16px; }
+  tbody th { text-align: left; font-weight: 500; padding: 7px 8px 7px 16px; white-space: nowrap; }
+  tbody td { text-align: center; padding: 7px 8px; white-space: nowrap; }
+  tbody tr { border-bottom: 1px solid var(--line); }
+  tbody tr:last-child { border-bottom: 0; }
+  tr.group th { background: var(--bg-soft); font-weight: 600; font-size: 13px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: .04em; padding: 6px 16px; }
+  tr.ours-row { background: var(--ours); border-bottom-color: color-mix(in srgb, var(--ours-line) 40%, transparent); }
+  tr.ours-row.first { border-top: 2px solid var(--ours-line); }
+  tr.ours-row:last-child { border-bottom: 0; }
+  th.ours { font-weight: 700; vertical-align: top; }
+  td b { font-weight: 700; }
+  .pm { color: var(--fg-muted); font-size: 12.5px; }
+  .arrow { color: var(--fg-muted); font-weight: 400; }
+  .tnote { font-size: 13.5px; color: var(--fg-muted); margin: 10px 2px 0; }
+  .tcap { font-weight: 600; margin: 0 0 10px; }
+  .tcap .tn { color: var(--accent); margin-right: 8px; }
+  .tblock + .tblock { margin-top: 32px; }
+  .narrow { max-width: 560px; }
+
+  footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--fg-muted); font-size: 13.5px; text-align: center; }
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a href="#abstract">Abstract</a>
+  <a href="#method">Method</a>
+  <a href="#samples">Audio samples</a>
+  <a href="#results">Results</a>
+</div></nav>
+
+<header class="wrap">
+  <div class="venue">Under review</div>
+  <h1>One-Step Is Enough to Judge
+    <small>Hybrid Noise Skimming for Full-band Text-to-Audio Generation</small>
+  </h1>
+  <p class="authors">Anonymous authors · Paper under double-blind review</p>
+  <div class="links">
+    <a href="#samples">🎧 Listen to samples</a>
+    <a href="#results">📊 Results</a>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section id="abstract" class="abstract">
+  <h2>Abstract</h2>
+  <p>Text-to-audio (TTA) systems based on latent diffusion and flow matching achieve high fidelity in the full-band scenarios, but their iterative sampling nature hinders practical deployment in real-world applications. Although few-step generation methods such as MeanFlow substantially reduce the number of function evaluations (NFEs), two fundamental challenges still remain in extremely low-NFE models. The first is <em>unreliability</em>: in extremely low NFE environments, quality of generated samples becomes highly sensitive to the initial noise. The second is <em>quality inconsistency</em>: increasing the number of ODE steps does not guarantee monotonic improvements in general sample quality. We propose a hybrid noise skimming framework to overcome both issues through better initial noise selection in few-step generation. The proposed framework combines two complementary components: a learnable <strong>Noise Booster</strong> amortizes the initial noise selection at the distribution level by refining random noise toward more favorable regions and <strong>Single-Step Search</strong> which improves the sample quality as instance-wise adaptation using only a single additional search step. The learnable Noise Booster restores the reliability and raises the quality floor by refining initial noise and in contrast to increasing ODE steps, enlarging the search budget yields monotonic improvement in sample quality. Experiments at 44.1 kHz show that our framework achieves SOTA performance with only a one-step generation.</p>
+</section>
+
+<section id="method">
+  <h2>Hybrid Noise Skimming</h2>
+  <figure>
+    <img src="figures/framework.png" alt="Overview of the Hybrid Noise Skimming framework: a Noise Booster refines Gaussian noise; for NFE ≤ 3 the boosted noise is fed directly to a K-step generator, while for NFE > 3 N candidates are verified with one-step generation and a score verifier before a two-step final generation." loading="lazy">
+    <figcaption>
+      <strong>Overview of the proposed Hybrid Noise Skimming framework.</strong>
+      When NFE ≤ 3, search is skipped and the boosted noise is directly used for <em>K</em>-step generation <em>G</em><sub>θ</sub><sup>[K]</sup>, where <em>K</em> = NFE.
+      When NFE &gt; 3, the Noise Booster refines <em>N</em> Gaussian noise into favorable noise candidates, and Single-Step Search verifies them with one-step generation <em>G</em><sub>θ</sub><sup>[1]</sup> to select the best one.
+      The boosted noise is then used for two-step final generation <em>G</em><sub>θ</sub><sup>[2]</sup>.
+    </figcaption>
+  </figure>
+</section>
+
+<section id="samples">
+  <h2>Audio samples</h2>
+  <p class="lead">20 captions from the AudioCaps test set, drawn from the human-evaluation pool. Each clip is 10 s and is presented as generated by each system, at its native sample rate and channel layout.</p>
+  <div class="legend">
+    <span><b>Proposed</b> 1 NFE / 16 NFE (44.1 kHz)</span>
+    <span><b>TangoFlux</b> 50 NFE (44.1 kHz)</span>
+    <span><b>MeanAudio-L</b> 1 NFE (16 kHz)</span>
+    <span><b>SoundCTM-DiT</b> 1 NFE (44.1 kHz)</span>
+    <span><b>SAO small-ARC</b> 8 NFE (44.1 kHz)</span>
+  </div>
+
+      <article class="sample" id="sample-01">
+        <h3><span class="num">01</span>Crickets chirping very loudly</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/01/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/01/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/01/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/01/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/01/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/01/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-02">
+        <h3><span class="num">02</span>A metal clack followed by a horse neighing as gusts of wind blow and birds chirp in the background</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/02/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/02/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/02/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/02/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/02/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/02/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-03">
+        <h3><span class="num">03</span>A man talking as a door slams shut followed by a door creaking</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/03/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/03/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/03/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/03/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/03/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/03/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-04">
+        <h3><span class="num">04</span>Rain is falling continuously</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/04/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/04/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/04/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/04/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/04/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/04/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-05">
+        <h3><span class="num">05</span>A few gunshots followed by a man speaking</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/05/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/05/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/05/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/05/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/05/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/05/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-06">
+        <h3><span class="num">06</span>A series of compressed air spraying as a motor hums in the background</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/06/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/06/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/06/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/06/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/06/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/06/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-07">
+        <h3><span class="num">07</span>Metal clinking with faint clip-clops of a horse</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/07/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/07/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/07/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/07/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/07/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/07/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-08">
+        <h3><span class="num">08</span>A motor humming as wood is being scrapped and sanded</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/08/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/08/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/08/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/08/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/08/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/08/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-09">
+        <h3><span class="num">09</span>A motorbike engine running as multiple car horns honk and a car alarm rings in the distance</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/09/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/09/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/09/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/09/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/09/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/09/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-10">
+        <h3><span class="num">10</span>Dog panting followed by footsteps</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/10/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/10/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/10/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/10/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/10/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/10/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-11">
+        <h3><span class="num">11</span>A drone whirring followed by a crashing sound</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/11/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/11/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/11/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/11/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/11/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/11/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-12">
+        <h3><span class="num">12</span>Machinery banging and hissing</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/12/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/12/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/12/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/12/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/12/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/12/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-13">
+        <h3><span class="num">13</span>Several faint clicks are followed by a person sneezing and coughing</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/13/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/13/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/13/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/13/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/13/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/13/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-14">
+        <h3><span class="num">14</span>Humming of a large engine with wind blowing</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/14/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/14/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/14/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/14/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/14/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/14/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-15">
+        <h3><span class="num">15</span>A sewing machine operating as a machine motor hisses loudly in the background</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/15/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/15/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/15/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/15/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/15/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/15/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-16">
+        <h3><span class="num">16</span>A race car engine is idling and then the car accelerates away quickly</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/16/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/16/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/16/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/16/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/16/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/16/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-17">
+        <h3><span class="num">17</span>Continuous quacking and rustling</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/17/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/17/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/17/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/17/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/17/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/17/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-18">
+        <h3><span class="num">18</span>A train horn honks with a train racing by</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/18/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/18/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/18/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/18/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/18/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/18/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-19">
+        <h3><span class="num">19</span>Synthesized rumbling followed by an explosion</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/19/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/19/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/19/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/19/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/19/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/19/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+
+      <article class="sample" id="sample-20">
+        <h3><span class="num">20</span>A sewing machine is in use as well as knocking and bleeping noises</h3>
+        <div class="players">
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/20/proposed_1nfe.wav"></audio>
+          </div>
+          <div class="player ours">
+            <div class="player-label"><span class="sys">Proposed</span><span class="nfe">16 NFE</span></div>
+            <audio controls preload="none" src="audio/20/proposed_16nfe.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">TangoFlux</span><span class="nfe">50 NFE</span></div>
+            <audio controls preload="none" src="audio/20/tangoflux.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">MeanAudio-L</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/20/meanaudio_l.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SoundCTM-DiT</span><span class="nfe">1 NFE</span></div>
+            <audio controls preload="none" src="audio/20/soundctm_dit.wav"></audio>
+          </div>
+          <div class="player">
+            <div class="player-label"><span class="sys">SAO small-ARC</span><span class="nfe">8 NFE</span></div>
+            <audio controls preload="none" src="audio/20/sao_small_arc.wav"></audio>
+          </div>
+        </div>
+      </article>
+</section>
+
+<section id="results">
+  <h2>Results</h2>
+
+  <div class="tblock">
+    <p class="tcap"><span class="tn">Table 1</span>Objective comparison with representative TTA models on the AudioCaps test set.</p>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>NFE</th>
+            <th>SR<br><span class="arrow">(kHz)</span></th>
+            <th>FD <span class="arrow">↓</span></th>
+            <th>IS <span class="arrow">↑</span></th>
+            <th>KL <span class="arrow">↓</span></th>
+            <th>CLAP <span class="arrow">↑</span></th>
+            <th>PQ <span class="arrow">↑</span></th>
+            <th>CE <span class="arrow">↑</span></th>
+            <th>CU <span class="arrow">↑</span></th>
+            <th>PC <span class="arrow">↑</span></th>
+            <th>AQA <span class="arrow">↑</span></th>
+          </tr>
+        </thead>
+        <tbody>
+<tr class="group"><th colspan="12">Diffusion / Flow TTA</th></tr>
+<tr><th>GenAU-L</th><td>200</td><td>16</td><td><b>10.03</b></td><td><b>15.63</b></td><td>1.51</td><td>0.317</td><td>5.69</td><td>3.39</td><td>5.00</td><td>3.17</td><td>0.862</td></tr>
+<tr><th>TangoFlux</th><td>50</td><td>44.1</td><td>16.32</td><td>15.13</td><td>1.37</td><td>0.320</td><td>5.75</td><td>3.56</td><td>5.02</td><td>3.23</td><td>0.910</td></tr>
+<tr><th>Resonate</th><td>50</td><td>44.1</td><td>11.80</td><td>12.83</td><td>1.38</td><td>0.406</td><td>5.75</td><td>3.48</td><td>4.99</td><td>3.32</td><td><b>0.911</b></td></tr>
+<tr class="group"><th colspan="12">Accelerated TTA</th></tr>
+<tr><th>AudioLCM</th><td>2</td><td>16</td><td>21.79</td><td>8.85</td><td>1.61</td><td>0.242</td><td>5.53</td><td>3.26</td><td>4.87</td><td>3.00</td><td>0.819</td></tr>
+<tr><th>ConsistencyTTA</th><td>1</td><td>16</td><td>19.56</td><td>9.88</td><td>1.48</td><td>0.262</td><td>5.85</td><td>3.50</td><td>4.94</td><td>3.50</td><td>0.842</td></tr>
+<tr><th>MeanAudio-L</th><td>1</td><td>16</td><td>11.02</td><td>12.84</td><td>1.34</td><td>0.317</td><td>5.52</td><td>3.36</td><td>4.91</td><td>3.03</td><td>0.882</td></tr>
+<tr><th>SoundCTM-UNet</th><td>2</td><td>16</td><td>15.71</td><td>9.29</td><td>1.50</td><td>0.252</td><td>5.66</td><td>3.31</td><td>4.89</td><td>3.30</td><td>0.836</td></tr>
+<tr><th>SoundCTM-DiT</th><td>1</td><td>44.1</td><td>22.13</td><td>10.92</td><td>1.69</td><td>0.346</td><td>5.65</td><td>3.23</td><td>4.87</td><td>3.06</td><td>0.779</td></tr>
+<tr><th>SAO small-ARC</th><td>8</td><td>44.1</td><td>47.92</td><td>9.23</td><td>2.42</td><td>0.181</td><td>6.28</td><td>3.55</td><td>5.40</td><td>2.72</td><td>0.656</td></tr>
+<tr class="ours-row first"><th rowspan="7" class="ours">Proposed</th><td>1</td><td rowspan="7">44.1</td><td>14.35</td><td>10.86</td><td>1.41</td><td>0.391</td><td>5.84</td><td>3.49</td><td>4.96</td><td><b>3.52</b></td><td>0.865</td></tr>
+<tr class="ours-row"><td>2</td><td>13.44</td><td>11.70</td><td>1.41</td><td>0.396</td><td>5.88</td><td>3.54</td><td>5.01</td><td>3.41</td><td>0.872</td></tr>
+<tr class="ours-row"><td>4</td><td>13.08</td><td>12.06</td><td>1.38</td><td>0.407</td><td>5.98</td><td>3.59</td><td>5.10</td><td>3.40</td><td>0.878</td></tr>
+<tr class="ours-row"><td>8</td><td>12.74</td><td>12.76</td><td>1.35</td><td>0.427</td><td>6.13</td><td>3.66</td><td>5.24</td><td>3.39</td><td>0.885</td></tr>
+<tr class="ours-row"><td>16</td><td>12.79</td><td>12.96</td><td>1.34</td><td>0.438</td><td>6.22</td><td>3.72</td><td>5.34</td><td>3.40</td><td>0.886</td></tr>
+<tr class="ours-row"><td>32</td><td>12.35</td><td>13.25</td><td><b>1.30</b></td><td>0.445</td><td>6.29</td><td>3.76</td><td>5.41</td><td>3.38</td><td>0.890</td></tr>
+<tr class="ours-row"><td>64</td><td>12.29</td><td>13.21</td><td>1.31</td><td><b>0.450</b></td><td><b>6.35</b></td><td><b>3.79</b></td><td><b>5.46</b></td><td>3.38</td><td>0.889</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tnote">Bold marks the best value in each column. FD, IS, and KL use PANNs embeddings; PQ, CE, CU, and PC are audio-aesthetics scores; AQA is an audio question-answering score from an audio–language judge.</p>
+  </div>
+
+  <div class="tblock">
+    <p class="tcap"><span class="tn">Table 2</span>Human evaluation results (5-point MOS, mean ± 95% CI). OVL = overall quality, REL = relevance to the caption.</p>
+    <div class="tablewrap narrow">
+      <table>
+        <thead>
+          <tr>
+            <th>Model</th>
+            <th>NFE</th>
+            <th>OVL <span class="arrow">↑</span></th>
+            <th>REL <span class="arrow">↑</span></th>
+          </tr>
+        </thead>
+        <tbody>
+<tr><th>TangoFlux</th><td>50</td><td>2.87 <span class="pm">± 0.12</span></td><td><b>3.73</b> <span class="pm">± 0.11</span></td></tr>
+<tr><th>SAO small-ARC</th><td>8</td><td>2.99 <span class="pm">± 0.12</span></td><td>2.55 <span class="pm">± 0.13</span></td></tr>
+<tr><th>MeanAudio-L</th><td>1</td><td>2.66 <span class="pm">± 0.11</span></td><td>3.04 <span class="pm">± 0.13</span></td></tr>
+<tr><th>SoundCTM-DiT</th><td>1</td><td>2.50 <span class="pm">± 0.11</span></td><td>2.51 <span class="pm">± 0.12</span></td></tr>
+<tr class="ours-row first"><th rowspan="2" class="ours">Proposed</th><td>1</td><td>2.76 <span class="pm">± 0.11</span></td><td>3.21 <span class="pm">± 0.13</span></td></tr>
+<tr class="ours-row"><td>16</td><td><b>3.00</b> <span class="pm">± 0.11</span></td><td>3.42 <span class="pm">± 0.12</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="tnote">Blind listening test on 100 AudioCaps captions. All clips were downmixed to mono and loudness-normalized to −23 LUFS for the test.</p>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">Anonymous project page for a paper under double-blind review. Baseline samples were generated with the official public checkpoints of each system.</div>
+</footer>
+
+<script>
+  // Only one clip plays at a time.
+  document.addEventListener('play', function (e) {
+    if (e.target.tagName !== 'AUDIO') return;
+    document.querySelectorAll('audio').forEach(function (a) { if (a !== e.target) a.pause(); });
+  }, true);
+</script>
+</body>
+</html>
